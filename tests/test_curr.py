@@ -1,5 +1,7 @@
 import math
 
+import pyomo.environ # noqa: F401
+
 from entmoot import Enting, ProblemConfig, GurobiOptimizer, PyomoOptimizer
 from entmoot.models.model_params import EntingParams, UncParams
 from entmoot.benchmarks import (
@@ -10,7 +12,6 @@ from entmoot.benchmarks import (
 import numpy as np
 import pytest
 import random
-import pyomo.environ # noqa: F401
 
 @pytest.mark.pipeline_test
 def test_core_model_copy():
