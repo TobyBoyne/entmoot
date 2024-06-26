@@ -103,7 +103,7 @@ def test_multiobj_constraints():
 @pytest.mark.pipeline_test
 def test_simple_test():
     def my_func(x: float) -> float:
-        return x**2 + 1 + random.uniform(-0.2, 0.2)
+        return (x - 1)**2 + 1 + random.uniform(-0.2, 0.2)
 
     # Define a one-dimensional minimization problem with one real variable bounded by -2 and 3
     problem_config = ProblemConfig()
@@ -111,24 +111,25 @@ def test_simple_test():
     problem_config.add_min_objective()
 
     # Create training data using the randomly disturbed function f(x) = x^2 + 1 + eps
-    X_train = np.reshape(np.linspace(-2, 3, 10), (-1, 1))
+    X_train = np.reshape(np.linspace(-2, 3, 20), (-1, 1))
     y_train = np.reshape([my_func(x) for x in X_train], (-1, 1))
 
     # Define enting object and corresponding parameters
     params = EntingParams(unc_params=UncParams(
         dist_metric="l1",
-        acq_sense="exploration"
+        acq_sense="penalty"
     ))
     enting = Enting(problem_config, params=params)
     # Fit tree model
     enting.fit(X_train, y_train)
 
     # Build PyomoOptimizer object with Gurobi as solver and solve optimization problem
-    params_pyo = {"solver_name": "gurobi"}
+    params_pyo = {"solver_name": "gurobi_direct"}
     opt_pyo = PyomoOptimizer(problem_config, params=params_pyo)
     res = opt_pyo.solve(enting)
 
-    assert round(res.opt_point[0]) == 0
+    true_optimum = 1.0
+    assert np.isclose(res.opt_point, true_optimum, atol=0.5)
 
 
 def test_compare_pyomo_gurobipy_multiobj():
